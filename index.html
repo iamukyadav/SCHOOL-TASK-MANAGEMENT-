@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCHOOL TASK MANAGEMENT SYSTEM (Pro)</title>
+  <style>
+    :root {
+      --saffron: #FF9933;
+      --dark-saffron: #E67E22;
+      --bg-light: #FFF9F2;
+      --dark: #2C3E50;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-light); color: var(--dark); margin: 0; padding: 0; }
+    header { background-color: var(--saffron); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .container { max-width: 950px; margin: 25px auto; padding: 25px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    h2 { border-bottom: 2px solid var(--saffron); padding-bottom: 8px; color: var(--dark-saffron); margin-top: 0; }
+    input, select, textarea, button { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; font-size: 15px; }
+    button { background-color: var(--saffron); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    button:hover { background-color: var(--dark-saffron); }
+    
+    .btn-progress { background-color: #2980b9; margin-right: 5px; }
+    .btn-progress:hover { background-color: #1f618d; }
+    .btn-done { background-color: #27ae60; margin-right: 5px; }
+    .btn-done:hover { background-color: #219150; }
+    .btn-reopen { background-color: #7f8c8d; font-size: 13px; }
+    .btn-reopen:hover { background-color: #626567; }
+    .btn-download { background-color: #27ae60; margin: 15px 0 10px 0; }
+    .btn-download:hover { background-color: #219150; }
+    
+    .hidden { display: none !important; }
+    .task-card { border-left: 5px solid var(--saffron); background: #fafafa; padding: 14px 16px; margin-bottom: 14px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    
+    /* बैज स्टाइल्स */
+    .badge { display: inline-block; padding: 5px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .badge-pending { background: #fff3cd; color: #856404; }
+    .badge-progress { background: #d1ecf1; color: #0c5460; }
+    .badge-completed { background: #d4edda; color: #155724; }
+
+    .toggle-link { color: var(--dark-saffron); font-weight: bold; cursor: pointer; text-decoration: underline; }
+
+    /* समरी मेट्रिक्स कार्ड्स */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+    .metric-card { padding: 15px; border-radius: 8px; text-align: center; color: white; }
+    .metric-card h3 { margin: 0; font-size: 28px; }
+    .metric-card p { margin: 5px 0 0 0; font-size: 14px; font-weight: bold; }
+    .card-total { background-color: #34495e; }
+    .card-pending { background-color: #f39c12; }
+    .card-progress { background-color: #2980b9; }
+    .card-done { background-color: #27ae60; }
+
+    /* रिपोर्ट टेबल */
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .report-table th, .report-table td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+    .report-table th { background-color: #f8f9fa; color: #333; }
+    .report-table tr:nth-child(even) { background-color: #fdfdfd; }
+    
+    .action-group { display: flex; gap: 10px; margin-top: 10px; }
+    .action-group button { width: auto; padding: 8px 14px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2 style="color: white; border: none; margin: 0; font-size: 20px;">विद्यालय प्रबंधन सिस्टम</h2>
+    <div id="userInfo" class="hidden">
+      <span id="userRole"></span> | 
+      <a href="javascript:void(0)" onclick="logout()" style="color: white; font-weight: bold; text-decoration: underline;">लॉगआउट</a>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <!-- Login Screen -->
+    <div id="loginSection">
+      <h2>लॉगिन करें</h2>
+      <label><b>ईमेल आईडी:</b></label>
+      <input type="email" id="loginEmail" placeholder="अपनी रजिस्टर्ड ईमेल दर्ज करें">
+      
+      <label><b>पासवर्ड:</b></label>
+      <input type="password" id="loginPassword" placeholder="पासवर्ड दर्ज करें">
+      
+      <button type="button" onclick="handleLogin()">लॉगिन करें</button>
+      <p style="text-align: center; margin-top: 20px; font-size: 15px;">
+        खाता नहीं है? <span class="toggle-link" onclick="toggleAuth('register')">नया अकाउंट रजिस्टर करें</span>
+      </p>
+    </div>
+
+    <!-- Registration Screen -->
+    <div id="registerSection" class="hidden">
+      <h2>नया अकाउंट रजिस्टर करें</h2>
+      <label><b>ईमेल आईडी:</b></label>
+      <input type="email" id="regEmail" placeholder="ईमेल आईडी दर्ज करें (उदा. teacher@school.com)">
+      
+      <label><b>पासवर्ड:</b></label>
+      <input type="password" id="regPassword" placeholder="पासवर्ड बनाएं (न्यूनतम 4 अक्षर)">
+      
+      <label><b>पद (Role):</b></label>
+      <select id="regRole">
+        <option value="teacher">शिक्षक (Teacher)</option>
+        <option value="principal">प्रिंसिपल (Principal)</option>
+      </select>
+      
+      <button type="button" onclick="handleRegister()">रजिस्टर करें</button>
+      <p style="text-align: center; margin-top: 20px; font-size: 15px;">
+        पहले से अकाउंट है? <span class="toggle-link" onclick="toggleAuth('login')">लॉगिन पेज पर जाएं</span>
+      </p>
+    </div>
+
+    <!-- Principal Dashboard -->
+    <div id="principalDashboard" class="hidden">
+      <h2>प्रिंसिपल डैशबोर्ड - लाइव कार्य प्रगति</h2>
+
+      <!-- ओवरव्यू कार्ड्स -->
+      <div class="metrics-grid">
+        <div class="metric-card card-total">
+          <h3 id="statTotal">0</h3>
+          <p>कुल कार्य (Total Tasks)</p>
+        </div>
+        <div class="metric-card card-progress">
+          <h3 id="statProgress">0</h3>
+          <p>कार्य प्रारंभ / प्रगति पर (In Progress)</p>
+        </div>
+        <div class="metric-card card-done">
+          <h3 id="statDone">0</h3>
+          <p>कार्य पूर्ण (Completed)</p>
+        </div>
+        <div class="metric-card card-pending">
+          <h3 id="statPending">0</h3>
+          <p>शुरू नहीं हुआ (Pending)</p>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 25px;">नया कार्य (Task) सौंपें</h3>
+      <input type="text" id="taskTitle" placeholder="कार्य का नाम (उदा. कक्षा 9 गणित मासिक टेस्ट कॉपी जांच)">
+      <textarea id="taskDesc" placeholder="कार्य का विवरण..." rows="2"></textarea>
+      <input type="email" id="assignTo" placeholder="शिक्षक की रजिस्टर्ड ईमेल आईडी">
+      <button type="button" onclick="assignTask()">कार्य असाइन करें</button>
+
+      <!-- शिक्षक-वार सारांश रिपोर्ट -->
+      <h3 style="margin-top: 35px; color: var(--dark-saffron);">शिक्षक कार्य निष्पादन रिपोर्ट (Teacher-wise Progress)</h3>
+      <div id="reportSummary"></div>
+      
+      <button type="button" class="btn-download" onclick="downloadCSVReport()">
+        📥 एक्सेल / CSV रिपोर्ट डाउनलोड करें
+      </button>
+
+      <h3 style="margin-top: 30px;">सभी कार्यों की विस्तृत सूची</h3>
+      <div id="allTasksList"></div>
+    </div>
+
+    <!-- Teacher Dashboard -->
+    <div id="teacherDashboard" class="hidden">
+      <h2>शिक्षक डैशबोर्ड - मेरे सौंपे गए कार्य</h2>
+      <div id="myTasksList"></div>
+    </div>
+
+  </div>
+
+  <script>
+    let users = [];
+    let currentUser = null;
+    let tasks = [];
+
+    // LocalStorage से डेटा लोड करना
+    try {
+      const savedUsers = localStorage.getItem('school_users');
+      users = savedUsers ? JSON.parse(savedUsers) : [];
+
+      const savedUser = localStorage.getItem('school_current_user');
+      if (savedUser) currentUser = JSON.parse(savedUser);
+
+      const savedTasks = localStorage.getItem('school_tasks');
+      if (savedTasks) tasks = JSON.parse(savedTasks);
+    } catch (e) {
+      users = [];
+    }
+
+    function safeSave(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (e) {}
+    }
+
+    function toggleAuth(view) {
+      if (view === 'register') {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('registerSection').classList.remove('hidden');
+      } else {
+        document.getElementById('registerSection').classList.add('hidden');
+        document.getElementById('loginSection').classList.remove('hidden');
+      }
+    }
+
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        alert('कृपया ईमेल और पासवर्ड दोनों दर्ज करें!');
+        return;
+      }
+
+      const foundUser = users.find(u => u.email === email && u.password === password);
+      if (!foundUser) {
+        alert('गलत ईमेल या पासवर्ड! यदि नया खाता है तो रजिस्टर करें।');
+        return;
+      }
+
+      currentUser = { email: foundUser.email, role: foundUser.role };
+      safeSave('school_current_user', currentUser);
+      updateUI();
+    }
+
+    function handleRegister() {
+      const email = document.getElementById('regEmail').value.trim().toLowerCase();
+      const password = document.getElementById('regPassword').value;
+      const role = document.getElementById('regRole').value;
+
+      if (!email || !password) return alert('सभी फ़ील्ड भरें!');
+      if (password.length < 4) return alert('पासवर्ड न्यूनतम 4 अक्षर का होना चाहिए!');
+
+      if (users.find(u => u.email === email)) {
+        return alert('यह ईमेल पहले से पंजीकृत है! कृपया लॉगिन करें।');
+      }
+
+      users.push({ email, password, role });
+      safeSave('school_users', users);
+      alert('अकाउंट सफलतापूर्वक बन गया! अब लॉगिन करें।');
+      
+      toggleAuth('login');
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = '';
+    }
+
+    function logout() {
+      currentUser = null;
+      try { localStorage.removeItem('school_current_user'); } catch (e) {}
+      updateUI();
+    }
+
+    function assignTask() {
+      const title = document.getElementById('taskTitle').value.trim();
+      const desc = document.getElementById('taskDesc').value.trim();
+      const assignedTo = document.getElementById('assignTo').value.trim().toLowerCase();
+
+      if (!title || !assignedTo) return alert('कार्य का नाम और शिक्षक की ईमेल अनिवार्य है!');
+
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('hi-IN') + " " + now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' });
+
+      const newTask = {
+        id: Date.now(),
+        title: title,
+        desc: desc,
+        assignedTo: assignedTo,
+        status: 'pending', // 'pending' | 'in_progress' | 'completed'
+        assignedDate: dateStr,
+        startedDate: '-',
+        completedDate: '-'
+      };
+
+      tasks.push(newTask);
+      safeSave('school_tasks', tasks);
+
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('taskDesc').value = '';
+      document.getElementById('assignTo').value = '';
+      
+      renderAllTasks();
+      renderMetricsAndReports();
+      alert('कार्य सफलतापूर्वक असाइन कर दिया गया!');
+    }
+
+    // शिक्षक द्वारा कार्य का स्टेटस बदलना
+    function setTaskStatus(taskId, newStatus) {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('hi-IN') + " " + now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' });
+
+      for (let i = 0; i < tasks.length; i++) {
+        if (tasks[i].id === taskId) {
+          tasks[i].status = newStatus;
+          if (newStatus === 'in_progress') {
+            tasks[i].startedDate = dateStr;
+          } else if (newStatus === 'completed') {
+            if (tasks[i].startedDate === '-') tasks[i].startedDate = dateStr;
+            tasks[i].completedDate = dateStr;
+          } else if (newStatus === 'pending') {
+            tasks[i].startedDate = '-';
+            tasks[i].completedDate = '-';
+          }
+          break;
+        }
+      }
+
+      safeSave('school_tasks', tasks);
+
+      if (currentUser.role === 'principal') {
+        renderAllTasks();
+        renderMetricsAndReports();
+      } else {
+        renderTeacherTasks();
+      }
+    }
+
+    function getStatusBadge(status) {
+      if (status === 'completed') {
+        return '<span class="badge badge-completed">✔ कार्य पूर्ण (Completed)</span>';
+      } else if (status === 'in_progress') {
+        return '<span class="badge badge-progress">⏳ कार्य प्रगति पर (In Progress)</span>';
+      } else {
+        return '<span class="badge badge-pending">⏸ शुरू नहीं हुआ (Pending)</span>';
+      }
+    }
+
+    // प्रिंसिपल ओवरव्यू और रिपोर्ट
+    function renderMetricsAndReports() {
+      let total = tasks.length;
+      let inProgress = 0;
+      let completed = 0;
+      let pending = 0;
+
+      const teacherStats = {};
+
+      tasks.forEach(t => {
+        if (t.status === 'completed') completed++;
+        else if (t.status === 'in_progress') inProgress++;
+        else pending++;
+
+        if (!teacherStats[t.assignedTo]) {
+          teacherStats[t.assignedTo] = { total: 0, inProgress: 0, completed: 0, pending: 0 };
+        }
+        teacherStats[t.assignedTo].total++;
+        if (t.status === 'completed') teacherStats[t.assignedTo].completed++;
+        else if (t.status === 'in_progress') teacherStats[t.assignedTo].inProgress++;
+        else teacherStats[t.assignedTo].pending++;
+      });
+
+      // कार्ड्स अपडेट
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statProgress').innerText = inProgress;
+      document.getElementById('statDone').innerText = completed;
+      document.getElementById('statPending').innerText = pending;
+
+      // सारांश टेबल
+      const container = document.getElementById('reportSummary');
+      if (total === 0) {
+        container.innerHTML = '<p style="color: #666;">कोई कार्य डेटा उपलब्ध नहीं है।</p>';
+        return;
+      }
+
+      let tableHtml = `
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>शिक्षक की ईमेल</th>
+              <th>कुल कार्य</th>
+              <th>प्रगति पर (In Progress)</th>
+              <th>पूर्ण (Completed)</th>
+              <th>शुरू नहीं हुआ (Pending)</th>
+              <th>पूर्ण प्रतिशत (% Done)</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      for (const email in teacherStats) {
+        const s = teacherStats[email];
+        const percent = Math.round((s.completed / s.total) * 100);
+        tableHtml += `
+          <tr>
+            <td><b>${email}</b></td>
+            <td>${s.total}</td>
+            <td style="color: #2980b9; font-weight: bold;">${s.inProgress}</td>
+            <td style="color: #27ae60; font-weight: bold;">${s.completed}</td>
+            <td style="color: #e67e22;">${s.pending}</td>
+            <td><b>${percent}%</b></td>
+          </tr>
+        `;
+      }
+      tableHtml += `</tbody></table>`;
+      container.innerHTML = tableHtml;
+    }
+
+    // CSV डाउनलोड
+    function downloadCSVReport() {
+      if (tasks.length === 0) return alert('डाउनलोड के लिए कोई रिकॉर्ड नहीं है!');
+
+      let csvContent = "\uFEFF";
+      csvContent += "शिक्षक की ईमेल,कार्य का नाम,विवरण,स्थिति,असाइन तिथि,प्रारंभ तिथि,पूर्ण तिथि\n";
+
+      tasks.forEach(t => {
+        let statusText = "लंबित (Pending)";
+        if (t.status === 'in_progress') statusText = "कार्य प्रगति पर (In Progress)";
+        if (t.status === 'completed') statusText = "कार्य पूर्ण (Completed)";
+
+        const row = [
+          `"${t.assignedTo}"`,
+          `"${(t.title || '').replace(/"/g, '""')}"`,
+          `"${(t.desc || '').replace(/"/g, '""')}"`,
+          `"${statusText}"`,
+          `"${t.assignedDate || '-'}"`,
+          `"${t.startedDate || '-'}"`,
+          `"${t.completedDate || '-'}"`
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `School_Task_Progress_Report_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function renderAllTasks() {
+      const list = document.getElementById('allTasksList');
+      if (tasks.length === 0) {
+        list.innerHTML = '<p style="color: #666;">अभी तक कोई कार्य असाइन नहीं किया गया है।</p>';
+        return;
+      }
+      let html = '';
+      tasks.slice().reverse().forEach(function(t) {
+        html += '<div class="task-card">' +
+          '<h4>' + t.title + ' ' + getStatusBadge(t.status) + '</h4>' +
+          '<p>' + (t.desc || 'कोई विवरण नहीं') + '</p>' +
+          '<small>शिक्षक: <b>' + t.assignedTo + '</b> | सौंपा गया: ' + (t.assignedDate || '-') + 
+          (t.startedDate !== '-' ? ' | शुरू हुआ: ' + t.startedDate : '') +
+          (t.completedDate !== '-' ? ' | पूर्ण हुआ: ' + t.completedDate : '') + '</small>' +
+        '</div>';
+      });
+      list.innerHTML = html;
+    }
+
+    function renderTeacherTasks() {
+      const list = document.getElementById('myTasksList');
+      const myTasks = tasks.filter(function(t) {
+        return t.assignedTo.toLowerCase() === currentUser.email.toLowerCase();
+      });
+
+      if (myTasks.length === 0) {
+        list.innerHTML = '<p style="color: #666;">आपके लिए अभी कोई कार्य नहीं है।</p>';
+        return;
+      }
+
+      let html = '';
+      myTasks.slice().reverse().forEach(function(t) {
+        html += '<div class="task-card">' +
+          '<h4>' + t.title + ' ' + getStatusBadge(t.status) + '</h4>' +
+          '<p>' + (t.desc || 'कोई विवरण नहीं') + '</p>' +
+          '<p style="font-size: 13px; color: #666;">असाइन तिथि: ' + (t.assignedDate || '-') + '</p>';
+
+        html += '<div class="action-group">';
+        
+        if (t.status === 'pending') {
+          html += '<button type="button" class="btn-progress" onclick="setTaskStatus(' + t.id + ', \'in_progress\')">▶ कार्य शुरू करें (Work in Progress)</button>';
+          html += '<button type="button" class="btn-done" onclick="setTaskStatus(' + t.id + ', \'completed\')">✔ सीधा पूर्ण चिह्नित करें</button>';
+        } else if (t.status === 'in_progress') {
+          html += '<button type="button" class="btn-done" onclick="setTaskStatus(' + t.id + ', \'completed\')">✔ कार्य पूरा हुआ (Work Completed)</button>';
+          html += '<button type="button" class="btn-reopen" onclick="setTaskStatus(' + t.id + ', \'pending\')">वापस रोकें (Pending)</button>';
+        } else if (t.status === 'completed') {
+          html += '<button type="button" class="btn-reopen" onclick="setTaskStatus(' + t.id + ', \'in_progress\')">पुनः खोलें (Re-open Work)</button>';
+        }
+
+        html += '</div></div>';
+      });
+      list.innerHTML = html;
+    }
+
+    function updateUI() {
+      const loginSection = document.getElementById('loginSection');
+      const registerSection = document.getElementById('registerSection');
+      const principalDashboard = document.getElementById('principalDashboard');
+      const teacherDashboard = document.getElementById('teacherDashboard');
+      const userInfo = document.getElementById('userInfo');
+      const userRole = document.getElementById('userRole');
+
+      loginSection.classList.add('hidden');
+      registerSection.classList.add('hidden');
+      principalDashboard.classList.add('hidden');
+      teacherDashboard.classList.add('hidden');
+      userInfo.classList.add('hidden');
+
+      if (!currentUser) {
+        loginSection.classList.remove('hidden');
+      } else {
+        userInfo.classList.remove('hidden');
+        userRole.innerText = currentUser.email + " (" + (currentUser.role === 'principal' ? 'प्रिंसिपल' : 'शिक्षक') + ")";
+
+        if (currentUser.role === 'principal') {
+          principalDashboard.classList.remove('hidden');
+          renderAllTasks();
+          renderMetricsAndReports();
+        } else {
+          teacherDashboard.classList.remove('hidden');
+          renderTeacherTasks();
+        }
+      }
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
