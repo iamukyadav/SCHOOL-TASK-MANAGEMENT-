@@ -4,21 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>विद्यालय कार्य प्रबंधन व्यवस्था (STMS)</title>
-  <!-- EmailJS SDK लोड करें (ईमेल भेजने के लिए) -->
+  <!-- EmailJS SDK (ईमेल भेजने के लिए) -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-    .card { max-width: 460px; margin: 30px auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .card { max-width: 480px; margin: 30px auto; background: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.12); }
     h2, h3 { text-align: center; color: #1a365d; margin-top: 0; }
     label { display: block; margin-top: 14px; font-weight: 600; color: #333; font-size: 14px; }
     input, select, button { width: 100%; padding: 11px; margin-top: 6px; box-sizing: border-box; border-radius: 6px; border: 1px solid #cbd5e0; font-size: 14px; }
     input:focus, select:focus { outline: none; border-color: #3182ce; }
-    button { background-color: #2b6cb0; color: white; border: none; font-weight: 600; cursor: pointer; margin-top: 20px; transition: background 0.2s; }
-    button:hover { background-color: #2c5282; }
-    .btn-secondary { background-color: #718096; margin-top: 10px; }
+    .btn-primary { background-color: #2b6cb0; color: white; border: none; font-weight: 600; cursor: pointer; margin-top: 20px; }
+    .btn-primary:hover { background-color: #2c5282; }
+    .btn-register { background-color: #28a745; color: white; border: none; font-weight: 600; cursor: pointer; margin-top: 12px; }
+    .btn-register:hover { background-color: #218838; }
+    .btn-secondary { background-color: #718096; color: white; border: none; cursor: pointer; margin-top: 12px; }
     .btn-secondary:hover { background-color: #4a5568; }
-    .links-container { display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; }
-    .link { color: #3182ce; cursor: pointer; text-decoration: underline; }
+    .link-row { text-align: right; margin-top: 10px; }
+    .link { color: #3182ce; cursor: pointer; text-decoration: underline; font-size: 13px; }
+    .divider { text-align: center; margin: 20px 0 10px; position: relative; }
+    .divider::before { content: ""; position: absolute; left: 0; top: 50%; width: 100%; height: 1px; background: #e2e8f0; z-index: 1; }
+    .divider span { background: #fff; padding: 0 10px; position: relative; z-index: 2; color: #718096; font-size: 13px; }
     .hidden { display: none; }
     .dashboard-header { background: #2b6cb0; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
     .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; background: #ecc94b; color: #744210; font-weight: bold; font-size: 12px; }
@@ -28,7 +33,7 @@
 </head>
 <body>
 
-  <!-- 1. लॉगिन स्क्रीन -->
+  <!-- ================= 1. लॉगिन स्क्रीन ================= -->
   <div id="loginCard" class="card">
     <h2>विद्यालय कार्य प्रबंधन व्यवस्था (STMS)</h2>
     <form onsubmit="handleLogin(event)">
@@ -45,65 +50,74 @@
       <label for="loginPassword">पासवर्ड:</label>
       <input type="password" id="loginPassword" placeholder="पासवर्ड दर्ज करें" required>
 
-      <div class="links-container">
-        <span class="link" onclick="switchView('registerCard')">नया खाता बनाएँ</span>
-        <span class="link" onclick="switchView('resetCard')">पासवर्ड भूल गए?</span>
+      <div class="link-row">
+        <span class="link" onclick="switchView('resetCard')">पासवर्ड भूल गए? (Reset Password)</span>
       </div>
 
-      <button type="submit">लॉगिन करें</button>
+      <button type="submit" class="btn-primary">लॉगिन करें</button>
     </form>
+
+    <div class="divider">
+      <span>खाता नहीं है?</span>
+    </div>
+
+    <!-- स्पष्ट नया रजिस्ट्रेशन बटन -->
+    <button type="button" class="btn-register" onclick="switchView('registerCard')">
+      ➕ नया खाता रजिस्टर करें (New Registration)
+    </button>
   </div>
 
-  <!-- 2. नया खाता पंजीकरण स्क्रीन (Register) -->
+  <!-- ================= 2. नया खाता पंजीकरण स्क्रीन ================= -->
   <div id="registerCard" class="card hidden">
-    <h2>नया खाता बनाएँ</h2>
+    <h2>नया खाता पंजीकरण</h2>
+    <p style="text-align: center; color: #4a5568; font-size: 14px; margin-top: -10px;">विद्यालय कार्य प्रबंधन में नया सदस्य जोड़ें</p>
+
     <form onsubmit="handleRegister(event)">
-      <label for="regName">पूरा नाम:</label>
-      <input type="text" id="regName" placeholder="उदा. राजेश कुमार" required>
+      <label for="regName">पूरा नाम दर्ज करें:</label>
+      <input type="text" id="regName" placeholder="उदा. श्री राजेश कुमार" required>
 
-      <label for="regEmail">ईमेल आईडी:</label>
-      <input type="email" id="regEmail" placeholder="name@school.com" required>
-
-      <label for="regRole">भूमिका (Role):</label>
+      <label for="regRole">पंजीकृत भूमिका (Role):</label>
       <select id="regRole" required>
         <option value="">-- भूमिका चुनें --</option>
         <option value="teacher">शिक्षक (Teacher)</option>
         <option value="principal">प्रधानाचार्य (Principal)</option>
       </select>
 
-      <label for="regPassword">पासवर्ड सेट करें:</label>
-      <input type="password" id="regPassword" minlength="6" placeholder="कम से कम 6 अक्षर" required>
+      <label for="regEmail">ईमेल आईडी (लॉगिन हेतु):</label>
+      <input type="email" id="regEmail" placeholder="name@school.com" required>
 
-      <button type="submit">खाता रजिस्टर करें</button>
-      <button type="button" class="btn-secondary" onclick="switchView('loginCard')">वापस लॉगिन पर जाएं</button>
+      <label for="regPassword">नया पासवर्ड बनाएं:</label>
+      <input type="password" id="regPassword" minlength="6" placeholder="कम से कम 6 अक्षरों का पासवर्ड" required>
+
+      <button type="submit" class="btn-register">खाता सुरक्षित सेव करें</button>
+      <button type="button" class="btn-secondary" onclick="switchView('loginCard')">पहले से खाता है? लॉगिन करें</button>
     </form>
   </div>
 
-  <!-- 3. पासवर्ड रीसेट स्क्रीन (Reset via Email) -->
+  <!-- ================= 3. पासवर्ड रीसेट स्क्रीन ================= -->
   <div id="resetCard" class="card hidden">
     <h2>पासवर्ड रीसेट</h2>
     <form id="requestOtpForm" onsubmit="sendResetEmail(event)">
       <label for="resetEmail">पंजीकृत ईमेल आईडी:</label>
       <input type="email" id="resetEmail" placeholder="name@school.com" required>
-      <button type="submit" id="sendBtn">रीसेट लिंक / कोड भेजें</button>
+      <button type="submit" id="sendBtn" class="btn-primary">रीसेट लिंक / OTP कोड भेजें</button>
     </form>
 
-    <!-- ईमेल भेजने के बाद यह भाग खुलेगा -->
+    <!-- ईमेल भेजने के बाद दिखेगा -->
     <form id="verifyOtpForm" class="hidden" onsubmit="handlePasswordUpdate(event)">
       <label for="otpInput">ईमेल पर प्राप्त सत्यापन कोड (OTP):</label>
-      <input type="text" id="otpInput" placeholder="6 अंकों का कोड दर्ज करें" required>
+      <input type="text" id="otpInput" placeholder="6 अंकों का OTP दर्ज करें" required>
 
       <label for="newPassword">नया पासवर्ड:</label>
       <input type="password" id="newPassword" minlength="6" placeholder="नया पासवर्ड दर्ज करें" required>
 
-      <button type="submit">पासवर्ड बदलें</button>
+      <button type="submit" class="btn-primary">पासवर्ड अपडेट करें</button>
     </form>
 
-    <button type="button" class="btn-secondary" onclick="switchView('loginCard')">वापस लॉगिन पर जाएं</button>
-    <p class="notice">* ईमेल सेवा को लाइव करने के लिए EmailJS क्रेडेंशियल्स दर्ज करें।</p>
+    <button type="button" class="btn-secondary" onclick="switchView('loginCard')">वापस लॉगिन स्क्रीन पर जाएं</button>
   </div>
 
-  <!-- 4. डैशबोर्ड स्क्रीन -->
+  <!-- ================= 4. डैशबोर्ड स्क्रीन ================= -->
   <div id="dashboardSection" class="hidden" style="max-width: 800px; margin: auto;">
     <div class="dashboard-header">
       <h2 style="color: white; margin: 0;">विद्यालय कार्य प्रबंधन व्यवस्था (STMS)</h2>
@@ -113,22 +127,21 @@
     <!-- केवल प्रधानाचार्य के लिए सुरक्षित सेक्शन -->
     <div id="principalZone" class="admin-box hidden">
       <h3>प्रधानाचार्य विशेषाधिकार पैनल (Principal Panel)</h3>
-      <p>यह नियंत्रण कक्ष केवल प्रधानाचार्य के लिए अधिकृत है। यहाँ से स्टाफ कार्य रिपोर्ट और स्कूल प्रबंधन देखा जा सकता है।</p>
+      <p>यह नियंत्रण कक्ष केवल प्रधानाचार्य के लिए उपलब्ध है। यहाँ से स्टाफ कार्य विवरण और स्कूल प्रबंधन देखा जा सकता है।</p>
     </div>
 
     <div class="card" style="max-width: 100%;">
       <h3>दैनिक विद्यालय कार्य (My Tasks)</h3>
       <ul>
-        <li>दैनिक छात्र उपस्थिति विवरण</li>
-        <li>अध्यापन पाठ योजना (Lesson Plan)</li>
+        <li>दैनिक छात्र उपस्थिति विवरण अद्यतन</li>
+        <li>अध्यापन पाठ योजना (Lesson Plan) संधारण</li>
       </ul>
       <button class="btn-secondary" style="width: auto; padding: 9px 20px;" onclick="logout()">लॉगआउट</button>
     </div>
   </div>
 
   <script>
-    // ---------------- ईमेल सेवा सेटअप (EmailJS) ----------------
-    // ईमेल सीधे भेजने के लिए EmailJS.com पर मुफ़्त अकाउंट बनाकर ये 3 आईडी बदलें:
+    // ---------- EmailJS सेटअप ----------
     const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY";
     const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID";
     const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";
@@ -137,7 +150,7 @@
       emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
     }
 
-    // ---------------- लोकल डेटाबेस (Local Storage) ----------------
+    // ---------- डेटा स्टोर ----------
     function getUsers() {
       const users = localStorage.getItem('stms_users');
       return users ? JSON.parse(users) : {
@@ -153,7 +166,7 @@
     let generatedOTP = null;
     let targetResetEmail = "";
 
-    // ---------------- स्क्रीन स्विचिंग ----------------
+    // ---------- स्क्रीन टॉगल ----------
     function switchView(viewId) {
       ['loginCard', 'registerCard', 'resetCard', 'dashboardSection'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
@@ -161,7 +174,7 @@
       document.getElementById(viewId).classList.remove('hidden');
     }
 
-    // ---------------- नया अकाउंट रजिस्टर ----------------
+    // ---------- नया रजिस्ट्रेशन ----------
     function handleRegister(e) {
       e.preventDefault();
       const name = document.getElementById('regName').value.trim();
@@ -171,18 +184,19 @@
 
       const users = getUsers();
       if (users[email]) {
-        alert("यह ईमेल आईडी पहले से पंजीकृत है! कृपया लॉगिन करें।");
+        alert("त्रुटि: यह ईमेल आईडी पहले से पंजीकृत है! कृपया लॉगिन करें।");
         return;
       }
 
       users[email] = { name: name, role: role, pass: pass };
       saveUsers(users);
 
-      alert("खाता सफलतापूर्वक पंजीकृत हो गया है! अब लॉगिन करें।");
+      alert("बधाई! आपका खाता सफलतापूर्वक बन गया है। अब कृपया लॉगिन करें।");
       switchView('loginCard');
+      document.getElementById('loginEmail').value = email;
     }
 
-    // ---------------- लॉगिन व्यवस्था व रोल सुरक्षा ----------------
+    // ---------- लॉगिन ----------
     function handleLogin(e) {
       e.preventDefault();
       const role = document.getElementById('loginRole').value;
@@ -193,17 +207,16 @@
       const user = users[email];
 
       if (!user || user.pass !== pass) {
-        alert("अमान्य ईमेल आईडी या पासवर्ड!");
+        alert("अमान्य ईमेल आईडी या पासवर्ड! कृपया दोबारा जांचें।");
         return;
       }
 
-      // रोल वेरिफिकेशन: शिक्षक प्रधानाचार्य के रोल से लॉगिन न कर पाए
+      // रोल सुरक्षा जांच
       if (user.role !== role) {
-        alert("रोल अस्वीकृत! आप इस खाते से " + (role === 'principal' ? 'प्रधानाचार्य' : 'शिक्षक') + " के रूप में लॉगिन करने के लिए अधिकृत नहीं हैं।");
+        alert("रोल अस्वीकृत! आप इस खाते से '" + (role === 'principal' ? 'प्रधानाचार्य' : 'शिक्षक') + "' के रूप में लॉगिन नहीं कर सकते।");
         return;
       }
 
-      // लॉगिन सफल
       document.getElementById('userNameView').innerText = user.name;
       document.getElementById('userRoleView').innerText = role === 'principal' ? 'प्रधानाचार्य' : 'शिक्षक';
 
@@ -216,14 +229,14 @@
       switchView('dashboardSection');
     }
 
-    // ---------------- ईमेल पर रीसेट कोड भेजना ----------------
+    // ---------- ईमेल पासवर्ड रीसेट ----------
     function sendResetEmail(e) {
       e.preventDefault();
       const email = document.getElementById('resetEmail').value.trim().toLowerCase();
       const users = getUsers();
 
       if (!users[email]) {
-        alert("यह ईमेल हमारे सिस्टम में मौजूद नहीं है!");
+        alert("यह ईमेल आईडी पंजीकृत नहीं है!");
         return;
       }
 
@@ -235,40 +248,38 @@
       sendBtn.disabled = true;
 
       if (EMAILJS_PUBLIC_KEY !== "YOUR_PUBLIC_KEY") {
-        // असली ईमेल भेजें
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
           to_email: email,
           pass_code: generatedOTP,
-          message: "आपका पासवर्ड रीसेट कोड है: " + generatedOTP
+          message: "आपका पासवर्ड रीसेट OTP कोड है: " + generatedOTP
         }).then(() => {
           alert("सत्यापन कोड आपकी ईमेल आईडी पर भेज दिया गया है!");
           document.getElementById('requestOtpForm').classList.add('hidden');
           document.getElementById('verifyOtpForm').classList.remove('hidden');
         }).catch((err) => {
-          alert("ईमेल भेजने में त्रुटि हुई। कृपया EmailJS कुंजी जांचें।");
+          alert("ईमेल भेजने में त्रुटि हुई।");
           console.error(err);
         }).finally(() => {
-          sendBtn.innerText = "रीसेट लिंक / कोड भेजें";
+          sendBtn.innerText = "रीसेट लिंक / OTP कोड भेजें";
           sendBtn.disabled = false;
         });
       } else {
-        // जब तक EmailJS की आईडी नहीं डाली गई है, तब तक टेस्टिंग के लिए अलर्ट
-        alert("[डेमो मोड]: असली मेल भेजने के लिए EmailJS कुंजी डालें। आपका टेस्ट OTP है: " + generatedOTP);
+        alert("[डेमो मोड]: असली मेल हेतु EmailJS की आईडी डालें। आपका टेस्ट OTP है: " + generatedOTP);
         document.getElementById('requestOtpForm').classList.add('hidden');
         document.getElementById('verifyOtpForm').classList.remove('hidden');
-        sendBtn.innerText = "रीसेट लिंक / कोड भेजें";
+        sendBtn.innerText = "रीसेट लिंक / OTP कोड भेजें";
         sendBtn.disabled = false;
       }
     }
 
-    // ---------------- पासवर्ड अपडेट करना ----------------
+    // ---------- पासवर्ड अपडेट ----------
     function handlePasswordUpdate(e) {
       e.preventDefault();
       const otp = document.getElementById('otpInput').value.trim();
       const newPass = document.getElementById('newPassword').value;
 
       if (otp !== generatedOTP) {
-        alert("गलत OTP कोड! कृपया दोबारा जांचें।");
+        alert("गलत OTP! कृपया ईमेल पर आया सही कोड दर्ज करें।");
         return;
       }
 
